@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Senior Data Engineer Interview Prep — 1000+ Q&A, Use Cases & Best Practices</title>
+<meta name="description" content="A comprehensive senior data engineer interview prep covering SQL, Snowflake, Python, PySpark, Azure Data Factory, AWS, migrations, system design and best practices." />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo">DE</div>
+    <div>
+      <div class="brand-title">DE Interview Prep</div>
+      <div class="brand-sub">Senior · 5+ Yrs</div>
+    </div>
+  </div>
+
+  <nav class="nav" id="nav">
+    <div class="nav-section">Browse</div>
+    <a class="nav-item active" data-view="dashboard"><span class="ic">▦</span>Dashboard</a>
+
+    <div class="nav-section">Questions</div>
+    <a class="nav-item" data-view="sql"><span class="ic">SQL</span>SQL</a>
+    <a class="nav-item" data-view="snowflake"><span class="ic">SF</span>Snowflake</a>
+    <a class="nav-item" data-view="python"><span class="ic">Py</span>Python</a>
+    <a class="nav-item" data-view="pyspark"><span class="ic">PS</span>PySpark</a>
+    <a class="nav-item" data-view="adf"><span class="ic">ADF</span>Azure Data Factory</a>
+    <a class="nav-item" data-view="aws"><span class="ic">AWS</span>AWS Services</a>
+    <a class="nav-item" data-view="migration"><span class="ic">MG</span>Migration</a>
+    <a class="nav-item" data-view="systemdesign"><span class="ic">SD</span>System Design</a>
+    <a class="nav-item" data-view="coding"><span class="ic">CD</span>Coding Problems</a>
+
+    <div class="nav-section">Use Cases</div>
+    <a class="nav-item" data-view="usecases"><span class="ic">UC</span>1000+ Use Cases</a>
+
+    <div class="nav-section">Reference</div>
+    <a class="nav-item" data-view="bestpractices"><span class="ic">BP</span>Best Practices</a>
+    <a class="nav-item" data-view="notes"><span class="ic">NT</span>Cheat Notes</a>
+    <a class="nav-item" data-view="bookmarks"><span class="ic">★</span>Bookmarks</a>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="theme-toggle" id="themeToggle" title="Toggle theme">◐ Theme</div>
+    <div class="stat">Total Q: <span id="totalQ">—</span></div>
+    <div class="stat">Total UC: <span id="totalUC">—</span></div>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    <div class="search-wrap">
+      <input id="searchInput" type="search" placeholder="Search 2000+ questions, use cases, keywords — try 'window function', 'SCD2', 'partition pruning'…" autocomplete="off" />
+      <span class="search-ic">⌕</span>
+    </div>
+    <div class="filters">
+      <select id="difficultyFilter">
+        <option value="">All Difficulty</option>
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+        <option value="expert">Expert</option>
+      </select>
+      <select id="tagFilter">
+        <option value="">All Tags</option>
+      </select>
+    </div>
+  </header>
+
+  <section class="content" id="content"><!-- view rendered here --></section>
+
+  <footer class="footer">
+    <span>Built for senior data engineer interviews · SQL · Snowflake · Python · PySpark · ADF · AWS</span>
+  </footer>
+</main>
+
+<!-- Data files (plain JS objects assigned to window.DATA buckets) -->
+<script src="data/sql.js"></script>
+<script src="data/snowflake.js"></script>
+<script src="data/python.js"></script>
+<script src="data/pyspark.js"></script>
+<script src="data/adf.js"></script>
+<script src="data/aws.js"></script>
+<script src="data/migration.js"></script>
+<script src="data/systemdesign.js"></script>
+<script src="data/coding.js"></script>
+<script src="data/usecases.js"></script>
+<script src="data/usecases2.js"></script>
+<script src="data/usecases3.js"></script>
+<script src="data/usecases4.js"></script>
+<script src="data/bestpractices.js"></script>
+<script src="data/notes.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
