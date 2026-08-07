@@ -109,6 +109,11 @@ uvicorn app.main:app --reload --port 8000
 
 Open **<http://localhost:8000>**.
 
+With no `JAA_AUTH_PASSWORD` set, the console is reachable from localhost only —
+any request from another machine gets a 503 rather than your resume. Set a
+password before exposing it anywhere. To run it on a server so you can use it
+from your phone, see **[deploy/DEPLOY.md](deploy/DEPLOY.md)**.
+
 ## Step 6 — Run your first batch
 
 1. Paste links into the box. **Multiple URLs are separated by `|||`** (newlines
@@ -199,6 +204,7 @@ change to the extractor or filler:
 python tests/test_form_flow.py        # DOM extraction + every fill action, verified in a real browser
 python tests/test_runner_flow.py      # full orchestrator, DuckDB, answer-bank reuse, review gate
 python tests/test_planner_contract.py # the exact request sent to Claude, over a mock transport
+python tests/test_auth.py             # nothing is reachable without the password
 ```
 
 `tests/fixtures/sample_form.html` is a deliberately awkward form — legend-based

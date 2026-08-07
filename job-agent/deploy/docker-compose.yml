@@ -1,0 +1,58 @@
+# Run from the job-agent/ directory:
+#   docker compose -f deploy/docker-compose.yml up -d --build
+#
+# Reads secrets from deploy/.env (see deploy/.env.example).
+services:
+  agent:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: job-agent:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      JAA_HEADLESS: "true"
+      JAA_NO_SANDBOX: "true"
+      JAA_CONCURRENCY: "${JAA_CONCURRENCY:-2}"
+      JAA_DEFAULT_MODE: "${JAA_DEFAULT_MODE:-review}"
+      JAA_EFFORT: "${JAA_EFFORT:-high}"
+    volumes:
+      # Everything that must survive a redeploy: DuckDB, screenshots,
+      # your resume, your profile.yaml, saved logins.
+      - agent-data:/data
+    # Chromium crashes with the default 64MB /dev/shm.
+    shm_size: "1gb"
+    # Keep the app off the public interface; Caddy is the only way in.
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 3g
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - agent
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Set to your domain, or to :80 for plain HTTP on an IP address.
+      JAA_SITE_ADDRESS: "${JAA_SITE_ADDRESS:-:80}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  agent-data:
+  caddy-data:
+  caddy-config:

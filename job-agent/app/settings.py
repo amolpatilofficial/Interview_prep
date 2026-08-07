@@ -53,6 +53,10 @@ class Settings:
     nav_timeout_ms: int
     slow_mo_ms: int
     browser_executable: str | None
+    no_sandbox: bool
+
+    auth_user: str
+    auth_password: str | None
 
     default_mode: str
     concurrency: int
@@ -78,6 +82,9 @@ def load_settings() -> Settings:
         nav_timeout_ms=_int("JAA_NAV_TIMEOUT_MS", 45000),
         slow_mo_ms=_int("JAA_SLOW_MO_MS", 0),
         browser_executable=(os.getenv("JAA_BROWSER_EXECUTABLE", "").strip() or None),
+        no_sandbox=_bool("JAA_NO_SANDBOX", False),
+        auth_user=(os.getenv("JAA_AUTH_USER", "").strip() or "admin"),
+        auth_password=(os.getenv("JAA_AUTH_PASSWORD", "").strip() or None),
         default_mode=mode,
         concurrency=max(1, _int("JAA_CONCURRENCY", 2)),
         min_confidence=_float("JAA_MIN_CONFIDENCE", 0.35),

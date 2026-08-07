@@ -1,0 +1,30 @@
+# Caddy fetches and renews a Let's Encrypt certificate automatically as long as
+# JAA_SITE_ADDRESS is a real domain pointed at this server. Set it to ":80" to
+# run over plain HTTP on a bare IP — acceptable only behind a VPN or Tailscale,
+# never on the open internet, because Basic auth is cleartext without TLS.
+{$JAA_SITE_ADDRESS} {
+	encode zstd gzip
+
+	# Server-Sent Events must not be buffered or the live log arrives in bursts.
+	@events path /api/events
+	reverse_proxy @events agent:8000 {
+		flush_interval -1
+	}
+
+	reverse_proxy agent:8000
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
+	log {
+		output file /data/access.log {
+			roll_size 10MB
+			roll_keep 3
+		}
+	}
+}

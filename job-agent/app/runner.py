@@ -145,10 +145,14 @@ class Orchestrator:
 
         sem = asyncio.Semaphore(max(1, concurrency))
         async with async_playwright() as pw:
+            args = ["--disable-blink-features=AutomationControlled"]
+            if settings.no_sandbox:
+                # Required when Chromium runs inside an unprivileged container.
+                args += ["--no-sandbox", "--disable-dev-shm-usage"]
             launch_kwargs: dict[str, Any] = {
                 "headless": headless,
                 "slow_mo": settings.slow_mo_ms or 0,
-                "args": ["--disable-blink-features=AutomationControlled"],
+                "args": args,
             }
             if settings.browser_executable:
                 launch_kwargs["executable_path"] = settings.browser_executable

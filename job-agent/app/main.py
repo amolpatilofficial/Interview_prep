@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from .auth import BasicAuthMiddleware
 from .db import db
 from .events import hub, sse
 from .extractor import normalize_question
@@ -20,6 +21,18 @@ from .settings import VALID_MODES, settings
 STATIC_DIR = Path(__file__).parent / "static"
 
 app = FastAPI(title="AI Job Application Agent", version="1.0.0")
+app.add_middleware(BasicAuthMiddleware)
+
+
+@app.get("/healthz")
+async def healthz() -> dict[str, Any]:
+    """Unauthenticated liveness probe for the reverse proxy / orchestrator."""
+    return {
+        "ok": True,
+        "profile_loaded": get_profile().error is None,
+        "api_key_present": bool(settings.api_key),
+        "active_batches": len(orchestrator.active_batches),
+    }
 
 
 # ------------------------------------------------------------------ schemas

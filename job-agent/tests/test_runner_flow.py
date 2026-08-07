@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app import runner as runner_mod  # noqa: E402
 from app.db import db  # noqa: E402
+from app.profile import Profile  # noqa: E402
 from app.runner import orchestrator, parse_urls  # noqa: E402
 from app.settings import settings  # noqa: E402
 
@@ -77,9 +78,6 @@ class StubPlanner:
 
 
 async def main() -> int:
-    if not settings.api_key:
-        # The orchestrator only needs a planner; stub it before it asks for one.
-        pass
 
     stub = StubPlanner()
 
@@ -88,10 +86,16 @@ async def main() -> int:
 
     runner_mod.get_planner = fake_get_planner  # type: ignore[assignment]
 
+    # Build the profile in-process so the test never depends on a developer's
+    # own config/profile.yaml being present (or on what's in it).
     resume = Path(__file__).parent / "fixtures" / "fake_resume.pdf"
     resume.write_bytes(b"%PDF-1.4 fake resume for tests\n")
-    profile = runner_mod.get_profile(refresh=True)
-    profile.documents["resume"] = resume
+    profile = Profile(
+        raw={"identity": {"full_name": "Amol Patil", "email": "amol@example.com"}},
+        resume_text="Senior data engineer, 8 years of Python and Spark.",
+        documents={"resume": resume},
+        path=Path("<test>"),
+    )
     runner_mod.get_profile = lambda refresh=False: profile  # type: ignore[assignment]
 
     print("\n[url parsing]")

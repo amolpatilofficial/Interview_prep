@@ -10,3 +10,4 @@ data/screenshots/*
 data/documents/*
 !data/documents/.gitkeep
 config/profile.yaml
+deploy/.env

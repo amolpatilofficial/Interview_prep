@@ -1,0 +1,43 @@
+# systemd unit for running without Docker (Ubuntu 22.04+).
+#
+#   sudo cp deploy/jobagent.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now jobagent
+#
+# Assumes the repo is at /opt/Interview_prep with a venv in job-agent/.venv
+# and secrets in job-agent/.env, all owned by the `jobagent` user.
+
+[Unit]
+Description=AI Job Application Agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=jobagent
+Group=jobagent
+WorkingDirectory=/opt/Interview_prep/job-agent
+EnvironmentFile=/opt/Interview_prep/job-agent/.env
+Environment=PLAYWRIGHT_BROWSERS_PATH=/opt/Interview_prep/job-agent/.playwright
+# Bind to loopback only; put nginx or Caddy in front for TLS.
+ExecStart=/opt/Interview_prep/job-agent/.venv/bin/uvicorn app.main:app \
+          --host 127.0.0.1 --port 8000 --proxy-headers
+
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+
+# Chromium needs a writable /tmp and a decent file-descriptor ceiling.
+PrivateTmp=true
+LimitNOFILE=8192
+
+# Hardening: the agent only ever needs to write inside its own directory.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/Interview_prep/job-agent/data
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target
