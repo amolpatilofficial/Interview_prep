@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Senior Data Engineer — Acme Corp</title>
+<meta property="og:site_name" content="Acme Corp"></head>
+<body>
+<header><input type="search" name="q" placeholder="Search jobs" aria-label="Search jobs"></header>
+<h1>Senior Data Engineer</h1>
+<p>Acme Corp — Pune, India (Hybrid)</p>
+
+<form id="app">
+  <div class="field"><label for="fn">First Name *</label><input id="fn" name="first_name" required></div>
+  <div class="field"><label for="ln">Last Name *</label><input id="ln" name="last_name" required></div>
+  <div class="field"><label for="em">Email *</label><input id="em" type="email" name="email" required></div>
+  <div class="field"><label for="ph">Phone</label><input id="ph" type="tel" name="phone"></div>
+
+  <div class="field"><label for="yrs">How many years of experience do you have with Python?</label>
+    <input id="yrs" name="python_years" maxlength="4"></div>
+
+  <div class="field"><label for="why">Why do you want to work at Acme?</label>
+    <textarea id="why" name="why" maxlength="600"></textarea></div>
+
+  <div class="field"><label for="notice">Notice period</label>
+    <select id="notice" name="notice">
+      <option value="">Select…</option>
+      <option value="imm">Immediate</option>
+      <option value="30">30 days</option>
+      <option value="60">60 days</option>
+    </select></div>
+
+  <fieldset><legend>Are you legally authorized to work in the United States? *</legend>
+    <label><input type="radio" name="us_auth" value="yes" required> Yes</label>
+    <label><input type="radio" name="us_auth" value="no"> No</label>
+  </fieldset>
+
+  <fieldset><legend>Which of these do you have production experience with?</legend>
+    <label><input type="checkbox" name="skills" value="spark"> Apache Spark</label>
+    <label><input type="checkbox" name="skills" value="snowflake"> Snowflake</label>
+    <label><input type="checkbox" name="skills" value="kafka"> Kafka</label>
+  </fieldset>
+
+  <!-- react-select style combobox -->
+  <div class="field"><span class="label">Preferred work location</span>
+    <div id="loc" role="combobox" aria-expanded="false" aria-owns="loc-list" tabindex="0">Select…</div>
+    <ul id="loc-list" role="listbox" style="display:none">
+      <li role="option">Pune</li><li role="option">Bengaluru</li><li role="option">Remote</li>
+    </ul>
+  </div>
+
+  <!-- dropzone hiding the real input -->
+  <div class="field"><span class="label">Resume / CV *</span>
+    <div class="dropzone">Drag your resume here
+      <input type="file" name="resume" accept=".pdf,.doc,.docx" style="display:none" required>
+    </div></div>
+
+  <div class="field"><label><input type="checkbox" name="tos" required> I accept the privacy policy *</label></div>
+  <div class="field"><label><input type="checkbox" name="mkt"> Send me marketing emails about other roles</label></div>
+  <div class="field"><label for="pw">Password</label><input id="pw" type="password" name="pw"></div>
+
+  <button type="submit">Submit Application</button>
+</form>
+
+<script>
+// Make the fake combobox behave like react-select.
+const loc = document.getElementById('loc'), list = document.getElementById('loc-list');
+loc.addEventListener('click', () => { list.style.display = 'block'; });
+list.addEventListener('click', (e) => {
+  if (e.target.matches('[role=option]')) { loc.textContent = e.target.textContent; list.style.display = 'none'; }
+});
+document.getElementById('app').addEventListener('submit', (e) => {
+  e.preventDefault();
+  document.body.insertAdjacentHTML('beforeend', '<h2 id="done">Thank you for your application!</h2>');
+});
+</script>
+</body></html>

@@ -1,0 +1,106 @@
+# Copy this file to config/profile.yaml and edit it.
+# Everything here is treated as authoritative fact — the agent will never invent
+# a value that isn't in this file, your resume, or your answer bank.
+
+identity:
+  first_name: Amol
+  last_name: Patil
+  full_name: Amol Patil
+  email: you@example.com
+  phone: "+91 90000 00000"
+  address_line1: 123 Example Street
+  city: Pune
+  state: Maharashtra
+  postal_code: "411001"
+  country: India
+  linkedin: https://www.linkedin.com/in/your-handle
+  github: https://github.com/your-handle
+  portfolio: ""
+  pronouns: ""
+
+professional:
+  current_title: Senior Data Engineer
+  current_company: Example Corp
+  years_of_experience: 8
+  # Used to answer "how many years with X?" without guessing.
+  skills_years:
+    python: 8
+    sql: 8
+    pyspark: 6
+    aws: 5
+    snowflake: 4
+    azure data factory: 4
+    databricks: 4
+    airflow: 5
+    kafka: 3
+  education:
+    - degree: B.E. Computer Engineering
+      institution: Example University
+      graduation_year: 2016
+      gpa: ""
+  certifications:
+    - AWS Certified Data Engineer – Associate
+
+work_authorization:
+  # Answer these honestly — they gate a lot of applications.
+  authorized_to_work_in_us: false
+  requires_visa_sponsorship_us: true
+  authorized_to_work_in_uk: false
+  authorized_to_work_in_india: true
+  current_visa_status: ""
+  security_clearance: none
+
+preferences:
+  desired_salary: "As per market standards"
+  desired_salary_currency: INR
+  current_salary: ""
+  notice_period: "30 days"
+  earliest_start_date: "2 weeks from offer"
+  willing_to_relocate: true
+  remote_preference: hybrid       # onsite | hybrid | remote
+  preferred_locations:
+    - Pune
+    - Bengaluru
+    - Remote
+  how_did_you_hear: Company website
+
+# Equal-opportunity / self-identification questions. "Decline to self identify"
+# is a valid answer on virtually every US form and is the safe default.
+demographics:
+  gender: Decline to self identify
+  race_ethnicity: Decline to self identify
+  hispanic_or_latino: Decline to self identify
+  veteran_status: I don't wish to answer
+  disability_status: I don't wish to answer
+
+consent:
+  # Required legal checkboxes get ticked. Marketing does not, unless you say so.
+  accept_terms_and_privacy: true
+  allow_marketing_emails: false
+  allow_talent_pool_retention: true
+
+# Paths are relative to the job-agent/ directory.
+documents:
+  resume: data/documents/resume.pdf
+  cover_letter: data/documents/cover_letter.pdf
+  # transcript: data/documents/transcript.pdf
+  # portfolio: data/documents/portfolio.pdf
+
+# Optional: if your resume PDF doesn't extract cleanly, paste the plain text here
+# and point at it. This is what the model reads for free-text answers.
+resume_text_file: ""
+
+# Long answers the agent should reuse verbatim when the question matches.
+standard_answers:
+  "Tell us about yourself": >
+    Senior data engineer with 8 years building batch and streaming pipelines on
+    AWS and Azure. Most recently I led a migration of a 40-table warehouse to
+    Snowflake, cutting nightly load time from 6 hours to 40 minutes.
+  "Why are you interested in this role": >
+    I'm looking for a team where data engineering is a product surface rather
+    than a support function, and where I can keep working close to Spark and
+    warehouse internals rather than drifting into pure orchestration.
+  "Describe your most significant project": >
+    I rebuilt our ingestion layer around Kafka and Spark Structured Streaming,
+    replacing a batch process that ran four times a day. It moved freshness from
+    six hours to under two minutes for 200+ downstream tables.

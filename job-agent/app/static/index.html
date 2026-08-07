@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Job Application Agent</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">◆</span>
+      <div>
+        <h1>Job Application Agent</h1>
+        <p class="sub" id="profile-line">loading profile…</p>
+      </div>
+    </div>
+    <div class="chips" id="settings-chips"></div>
+  </header>
+
+  <main>
+    <!-- ---------------------------------------------------------- composer -->
+    <section class="card composer">
+      <label class="field-label" for="urls">
+        Job application links
+        <span class="hint">paste one per line, or separate with <code>|||</code></span>
+      </label>
+      <textarea id="urls" rows="4" spellcheck="false"
+        placeholder="https://boards.greenhouse.io/acme/jobs/123 ||| https://jobs.lever.co/globex/456 ||| https://careers.initech.com/apply/789"></textarea>
+
+      <div class="composer-row">
+        <div class="control">
+          <label for="mode">Mode</label>
+          <select id="mode">
+            <option value="review">Review — fill, then ask me before submitting</option>
+            <option value="dry_run">Dry run — fill only, never submit</option>
+            <option value="auto">Auto — fill and submit</option>
+          </select>
+        </div>
+        <div class="control narrow">
+          <label for="concurrency">Parallel</label>
+          <input id="concurrency" type="number" min="1" max="8" value="2" />
+        </div>
+        <div class="control narrow">
+          <label for="headless">Browser</label>
+          <select id="headless">
+            <option value="false">Visible</option>
+            <option value="true">Headless</option>
+          </select>
+        </div>
+        <button id="run" class="primary">Run agent</button>
+      </div>
+      <p class="error" id="composer-error" hidden></p>
+    </section>
+
+    <!-- ------------------------------------------------------------- stats -->
+    <section class="stats" id="stats"></section>
+
+    <div class="split">
+      <!-- ------------------------------------------------------ left column -->
+      <section class="card grow">
+        <nav class="tabs">
+          <button class="tab active" data-tab="apps">Applications</button>
+          <button class="tab" data-tab="answers">Answer bank</button>
+          <span class="spacer"></span>
+          <button class="ghost" id="refresh">Refresh</button>
+        </nav>
+
+        <div id="tab-apps">
+          <div class="table-wrap">
+            <table id="apps-table">
+              <thead>
+                <tr>
+                  <th>Company</th><th>Role</th><th>ATS</th>
+                  <th class="num">Fields</th><th>Status</th><th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="empty" id="apps-empty">Nothing yet. Paste some links above and run the agent.</p>
+        </div>
+
+        <div id="tab-answers" hidden>
+          <form class="answer-form" id="answer-form">
+            <input id="answer-q" placeholder="Question (e.g. Years of experience with Python)" />
+            <input id="answer-a" placeholder="Your answer" />
+            <button class="primary small" type="submit">Pin answer</button>
+          </form>
+          <div class="table-wrap">
+            <table id="answers-table">
+              <thead>
+                <tr><th>Question</th><th>Answer</th><th class="num">Used</th><th></th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="empty" id="answers-empty">
+            Empty for now. Every answer the agent commits to a form is remembered here and reused
+            on the next application.
+          </p>
+        </div>
+      </section>
+
+      <!-- ----------------------------------------------------- right column -->
+      <section class="card console-card">
+        <header class="console-head">
+          <h2>Live activity</h2>
+          <span class="dot" id="sse-dot" title="stream disconnected"></span>
+        </header>
+        <div class="console" id="console"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ------------------------------------------------------------- drawer -->
+  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+  <aside class="drawer" id="drawer" hidden>
+    <header>
+      <div>
+        <h2 id="drawer-title">Application</h2>
+        <p class="sub" id="drawer-sub"></p>
+      </div>
+      <button class="ghost" id="drawer-close">Close</button>
+    </header>
+    <div id="drawer-body"></div>
+  </aside>
+
+  <script src="/app.js"></script>
+</body>
+</html>
