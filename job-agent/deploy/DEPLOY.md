@@ -89,17 +89,27 @@ openssl rand -base64 24        # copy this
 nano deploy/.env
 ```
 
-Fill in three things:
+Fill in a model key, a console password, and where it's reachable:
 
 ```ini
+# One of these two:
 ANTHROPIC_API_KEY=sk-ant-...
+# ...or the free tier:
+OPENROUTER_API_KEY=sk-or-v1-...
+JAA_OPENROUTER_MODEL=nvidia/nemotron-3-super-120b-a12b:free
+
 JAA_AUTH_USER=amol
 JAA_AUTH_PASSWORD=<the string you just generated>
 JAA_SITE_ADDRESS=agent.yourdomain.com   # or :80 — see Part 5
 ```
 
-The container **will not start** without `JAA_AUTH_PASSWORD`. That is deliberate:
-it binds `0.0.0.0`, and it holds your resume.
+The container **will not start** without `JAA_AUTH_PASSWORD`, or without one of
+the two model keys. That is deliberate: it binds `0.0.0.0`, and it holds your
+resume.
+
+On the free tier also set `JAA_CONCURRENCY=1` — OpenRouter allows 20
+requests/minute and two parallel browsers will burst past it. See
+[Using a free model](../README.md#using-a-free-model-openrouter).
 
 Start it:
 
@@ -157,7 +167,7 @@ Restart and check:
 ```bash
 docker compose -f deploy/docker-compose.yml restart agent
 curl -s http://localhost/healthz
-# {"ok":true,"profile_loaded":true,"api_key_present":true,"active_batches":0}
+# {"ok":true,"profile_loaded":true,"provider":"openrouter","credentials_ok":true,"active_batches":0}
 ```
 
 If `profile_loaded` is `false`, the path in `profile.yaml` is wrong or the YAML
@@ -304,9 +314,13 @@ the `Caddyfile` here works with `reverse_proxy 127.0.0.1:8000` instead of
 
 ## Troubleshooting
 
-**Container exits immediately** — read the log. `JAA_AUTH_PASSWORD` or
-`ANTHROPIC_API_KEY` missing from `deploy/.env` is the usual cause; the entrypoint
+**Container exits immediately** — read the log. A missing `JAA_AUTH_PASSWORD`,
+or neither model key set in `deploy/.env`, is the usual cause; the entrypoint
 says which.
+
+**`OpenRouter rate limit hit`** — the free tier is 20 requests/minute and 50/day.
+Set `JAA_CONCURRENCY=1`, raise `JAA_FIELD_BATCH` so each page costs fewer calls,
+or buy $10 of credits to lift the daily cap to 1000.
 
 **`Target page, context or browser has been closed`** — Chromium ran out of
 memory. Set `JAA_CONCURRENCY=1`, and confirm `shm_size: "1gb"` is in the compose

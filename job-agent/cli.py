@@ -13,6 +13,7 @@ import sys
 
 from app.db import db
 from app.events import hub
+from app.llm import credential_error
 from app.profile import get_profile
 from app.runner import orchestrator, parse_urls
 from app.settings import VALID_MODES, settings
@@ -41,8 +42,9 @@ async def run(urls: list[str], mode: str, concurrency: int, headless: bool) -> i
     if profile.error:
         print(f"error: {profile.error}", file=sys.stderr)
         return 1
-    if not settings.api_key:
-        print("error: ANTHROPIC_API_KEY is not set.", file=sys.stderr)
+    problem = credential_error()
+    if problem:
+        print(f"error: {problem}", file=sys.stderr)
         return 1
     if mode == "review":
         print("note: 'review' mode needs the web UI to approve. Using 'dry_run'.", file=sys.stderr)

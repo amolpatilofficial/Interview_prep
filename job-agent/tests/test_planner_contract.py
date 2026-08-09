@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import anthropic  # noqa: E402
 import httpx  # noqa: E402
 
-from app.llm import PLAN_SCHEMA, LLMError, Planner  # noqa: E402
+from app.llm import PLAN_SCHEMA, AnthropicPlanner, LLMError  # noqa: E402
 from app.profile import Profile  # noqa: E402
 from app.settings import settings  # noqa: E402
 
@@ -94,7 +94,7 @@ async def main() -> int:
         documents={"resume": Path("data/documents/resume.pdf")},
     )
 
-    planner = Planner.__new__(Planner)  # skip the API-key requirement
+    planner = AnthropicPlanner.__new__(AnthropicPlanner)  # skip the API-key requirement
     planner._client = anthropic.AsyncAnthropic(
         api_key="test-key", http_client=httpx.AsyncClient(transport=make_transport())
     )

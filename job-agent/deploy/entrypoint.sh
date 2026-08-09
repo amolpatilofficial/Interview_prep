@@ -10,8 +10,9 @@ if [ -z "$JAA_AUTH_PASSWORD" ]; then
   exit 1
 fi
 
-if [ -z "$ANTHROPIC_API_KEY" ]; then
-  echo "FATAL: ANTHROPIC_API_KEY is not set." >&2
+if [ -z "$ANTHROPIC_API_KEY" ] && [ -z "$OPENROUTER_API_KEY" ]; then
+  echo "FATAL: no model provider configured." >&2
+  echo "       Set ANTHROPIC_API_KEY, or OPENROUTER_API_KEY to use a free model." >&2
   exit 1
 fi
 

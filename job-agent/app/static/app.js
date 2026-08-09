@@ -38,13 +38,15 @@ async function loadProfile() {
       `docs: ${docs.length ? docs.join(", ") : "none"}`;
   }
   $("#settings-chips").innerHTML = [
-    `<span class="chip">${esc(settings.model)}</span>`,
-    `<span class="chip">effort ${esc(settings.effort)}</span>`,
+    `<span class="chip">${esc(settings.provider_label)}</span>`,
     `<span class="chip">min conf ${settings.min_confidence}</span>`,
-    settings.api_key_present
-      ? `<span class="chip">API key ✓</span>`
-      : `<span class="chip bad">API key missing</span>`,
-  ].join("");
+    settings.field_batch
+      ? `<span class="chip">${settings.field_batch} fields/call</span>`
+      : "",
+    settings.credential_error
+      ? `<span class="chip bad" title="${esc(settings.credential_error)}">API key missing</span>`
+      : `<span class="chip">API key ✓</span>`,
+  ].filter(Boolean).join("");
   $("#mode").value = settings.default_mode;
   $("#concurrency").value = settings.concurrency;
   $("#headless").value = String(settings.headless);

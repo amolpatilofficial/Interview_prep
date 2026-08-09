@@ -14,6 +14,7 @@ from .auth import BasicAuthMiddleware
 from .db import db
 from .events import hub, sse
 from .extractor import normalize_question
+from .llm import credential_error, describe_provider
 from .profile import get_profile
 from .runner import orchestrator, parse_urls
 from .settings import VALID_MODES, settings
@@ -30,7 +31,8 @@ async def healthz() -> dict[str, Any]:
     return {
         "ok": True,
         "profile_loaded": get_profile().error is None,
-        "api_key_present": bool(settings.api_key),
+        "provider": settings.provider,
+        "credentials_ok": credential_error() is None,
         "active_batches": len(orchestrator.active_batches),
     }
 
@@ -62,8 +64,9 @@ async def create_run(req: RunRequest) -> dict[str, Any]:
     profile = get_profile(refresh=True)
     if profile.error:
         raise HTTPException(400, profile.error)
-    if not settings.api_key:
-        raise HTTPException(400, "ANTHROPIC_API_KEY is not set — copy .env.example to .env.")
+    problem = credential_error()
+    if problem:
+        raise HTTPException(400, problem)
 
     mode = req.mode or settings.default_mode
     if mode not in VALID_MODES:
@@ -133,13 +136,14 @@ async def profile_summary(refresh: bool = False) -> dict[str, Any]:
     return {
         "profile": get_profile(refresh=refresh).summary(),
         "settings": {
-            "model": settings.model,
-            "effort": settings.effort,
+            "provider": settings.provider,
+            "provider_label": describe_provider(),
             "default_mode": settings.default_mode,
             "concurrency": settings.concurrency,
             "headless": settings.headless,
             "min_confidence": settings.min_confidence,
-            "api_key_present": bool(settings.api_key),
+            "field_batch": settings.field_batch,
+            "credential_error": credential_error(),
         },
     }
 

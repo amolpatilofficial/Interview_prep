@@ -14,7 +14,7 @@ documents, and submits.
         ↓
    Answer bank (DuckDB)  →  "you answered this exact question before"
         ↓
-   Claude (claude-opus-5)  →  one action per field, with a confidence score
+   Claude, or any OpenRouter model  →  one action per field + a confidence score
         ↓
    Playwright fills + uploads  →  screenshot
         ↓
@@ -51,14 +51,26 @@ playwright install-deps chromium    # or: sudo apt install libnss3 libnspr4 liba
 cp .env.example .env
 ```
 
-Open `.env` and set **one required value**:
+Open `.env` and set **one API key** — either provider works:
 
-```
+**Anthropic** (best quality, paid — <https://console.anthropic.com/settings/keys>):
+
+```ini
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-Get the key from <https://console.anthropic.com/settings/keys>. Everything else
-has a sane default. The ones you'll actually touch:
+**OpenRouter** (has a free tier — <https://openrouter.ai/keys>):
+
+```ini
+OPENROUTER_API_KEY=sk-or-v1-...
+JAA_OPENROUTER_MODEL=nvidia/nemotron-3-super-120b-a12b:free
+```
+
+The provider is inferred from whichever key you set (Anthropic wins if you set
+both; force it with `JAA_PROVIDER=openrouter`). See
+[Using a free model](#using-a-free-model-openrouter) for what changes.
+
+Everything else has a sane default. The ones you'll actually touch:
 
 | Variable | Default | What it does |
 |---|---|---|
@@ -66,7 +78,8 @@ has a sane default. The ones you'll actually touch:
 | `JAA_DEFAULT_MODE` | `review` | `dry_run` \| `review` \| `auto` — see Step 6. |
 | `JAA_CONCURRENCY` | `2` | How many applications run at once. |
 | `JAA_MIN_CONFIDENCE` | `0.35` | Below this, the agent leaves the field blank rather than guessing. |
-| `JAA_EFFORT` | `high` | Claude reasoning effort: `low`…`max`. `medium` is cheaper and usually fine. |
+| `JAA_EFFORT` | `high` | Claude reasoning effort: `low`…`max`. `medium` is cheaper and usually fine. Anthropic only. |
+| `JAA_FIELD_BATCH` | `0` / `18` | Fields per model call. `0` = all at once (Anthropic); OpenRouter defaults to 18. |
 
 ## Step 3 — Your profile
 
@@ -151,6 +164,63 @@ python cli.py --setup-login https://www.linkedin.com/login
 Log in in the window that opens, then press Enter in the terminal. The session
 is written to `data/storage_state.json` and reused by every later run.
 
+## Using a free model (OpenRouter)
+
+Set `OPENROUTER_API_KEY` instead of `ANTHROPIC_API_KEY` and you're on the free
+tier. Four things change, and all four are worth knowing before you let it
+submit anything.
+
+**1. Quality drops, and it drops where it costs you.** Copying your email into
+an email box is easy and any model does it. Reading *"Describe a time you had to
+influence a team without authority"* and writing three grounded sentences from
+your resume is not. That is exactly the kind of answer a 9B model gets bland or
+subtly wrong — and it goes out under your name. **Stay in `review` mode and read
+the answers.** If you only ever run free models, treat the agent as a very fast
+form-filler that drafts your long answers, not as something to approve blind.
+
+**2. Only four free models support strict JSON schema output**, and the agent
+needs structured output to work at all. Best first:
+
+| Model | Context |
+|---|---|
+| `nvidia/nemotron-3-super-120b-a12b:free` *(default)* | 1M |
+| `google/gemma-4-26b-a4b-it:free` | 262k |
+| `openai/gpt-oss-20b:free` | 131k |
+| `nvidia/nemotron-nano-9b-v2:free` | 32k |
+
+That list changes. Check the current one:
+
+```bash
+curl -s "https://openrouter.ai/api/v1/models?supported_parameters=structured_outputs" \
+  | python3 -c "import json,sys; [print(m['id']) for m in json.load(sys.stdin)['data'] if m['id'].endswith(':free')]"
+```
+
+Models outside that list often still work — the agent retries without the schema
+and salvages JSON out of code fences or surrounding prose — but it's a coin flip.
+
+**3. Rate limits are the real ceiling: 20 requests/minute and 50/day**, rising
+to 1000/day once you've ever bought $10 of credits. Each page costs
+`ceil(fields ÷ JAA_FIELD_BATCH)` requests, so a 30-field form at the default
+batch of 18 is 2 requests. Fifty a day is roughly 20-25 applications — genuinely
+enough. If you hit the limit, raise `JAA_FIELD_BATCH` to trade accuracy for
+quota, and keep `JAA_CONCURRENCY` at 1 or 2 so you don't burst past 20/min.
+
+**4. Check the privacy toggle before you send your resume.** OpenRouter itself
+does not store prompts unless you opt in. But `:free` endpoints are free because
+the upstream provider gets something, and some of them train on inputs.
+OpenRouter gates those behind a setting at
+<https://openrouter.ai/settings/privacy>. Your prompt here contains your full
+resume, home address, and phone number. Decide deliberately — and if you'd
+rather not, `google/gemma-4-26b-a4b-it:free` and paid models both avoid it.
+
+Tuning that helps weak models:
+
+```ini
+JAA_FIELD_BATCH=10        # smaller batches = more accurate, more requests
+JAA_MIN_CONFIDENCE=0.5    # be stricter about leaving fields blank
+JAA_CONCURRENCY=1         # stay under 20 requests/minute
+```
+
 ## The answer bank
 
 Every answer the agent commits with reasonable confidence is stored in DuckDB,
@@ -204,6 +274,7 @@ change to the extractor or filler:
 python tests/test_form_flow.py        # DOM extraction + every fill action, verified in a real browser
 python tests/test_runner_flow.py      # full orchestrator, DuckDB, answer-bank reuse, review gate
 python tests/test_planner_contract.py # the exact request sent to Claude, over a mock transport
+python tests/test_openrouter.py       # OpenRouter backend, batching, and messy free-model output
 python tests/test_auth.py             # nothing is reachable without the password
 ```
 

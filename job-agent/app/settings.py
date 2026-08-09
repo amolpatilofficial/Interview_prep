@@ -41,12 +41,30 @@ def _path(name: str, default: str) -> Path:
 VALID_MODES = ("dry_run", "review", "auto")
 
 
+VALID_PROVIDERS = ("anthropic", "openrouter")
+
+# Free OpenRouter models that advertise json_schema structured output. Anything
+# else on the free tier tends to return prose around the JSON, which the
+# planner's salvage path can usually recover but should not have to.
+OPENROUTER_DEFAULT_MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
+
+
 @dataclass(frozen=True)
 class Settings:
+    provider: str
     api_key: str | None
     model: str
     effort: str
     server_fallbacks: bool
+
+    openrouter_api_key: str | None
+    openrouter_model: str
+    openrouter_base_url: str
+    openrouter_app_title: str
+
+    field_batch: int
+    max_output_tokens: int
+    request_timeout_s: float
 
     headless: bool
     storage_state: Path
@@ -72,11 +90,37 @@ def load_settings() -> Settings:
     mode = (os.getenv("JAA_DEFAULT_MODE", "review") or "review").strip()
     if mode not in VALID_MODES:
         mode = "review"
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY") or None
+    openrouter_key = os.getenv("OPENROUTER_API_KEY") or None
+
+    provider = (os.getenv("JAA_PROVIDER", "") or "").strip().lower()
+    if provider not in VALID_PROVIDERS:
+        # Infer from whichever key is present; Anthropic wins if both are.
+        provider = "anthropic" if anthropic_key else ("openrouter" if openrouter_key else "anthropic")
+
+    # Free models are smaller and less reliable, so hand them fewer fields at a
+    # time; a focused prompt beats one long one on a weak model.
+    default_batch = 18 if provider == "openrouter" else 0
+
     s = Settings(
-        api_key=os.getenv("ANTHROPIC_API_KEY") or None,
+        provider=provider,
+        api_key=anthropic_key,
         model=os.getenv("JAA_MODEL", "claude-opus-5").strip() or "claude-opus-5",
         effort=(os.getenv("JAA_EFFORT", "high") or "high").strip(),
         server_fallbacks=_bool("JAA_SERVER_FALLBACKS", True),
+        openrouter_api_key=openrouter_key,
+        openrouter_model=(
+            os.getenv("JAA_OPENROUTER_MODEL", "").strip() or OPENROUTER_DEFAULT_MODEL
+        ),
+        openrouter_base_url=(
+            os.getenv("JAA_OPENROUTER_BASE_URL", "").strip() or "https://openrouter.ai/api/v1"
+        ),
+        openrouter_app_title=(
+            os.getenv("JAA_OPENROUTER_APP_TITLE", "").strip() or "Job Application Agent"
+        ),
+        field_batch=max(0, _int("JAA_FIELD_BATCH", default_batch)),
+        max_output_tokens=_int("JAA_MAX_OUTPUT_TOKENS", 16000 if provider == "anthropic" else 8000),
+        request_timeout_s=_float("JAA_REQUEST_TIMEOUT_S", 300.0),
         headless=_bool("JAA_HEADLESS", False),
         storage_state=_path("JAA_STORAGE_STATE", "data/storage_state.json"),
         nav_timeout_ms=_int("JAA_NAV_TIMEOUT_MS", 45000),
